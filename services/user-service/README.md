@@ -190,7 +190,7 @@ user-service/
 ### Containerized Deployment  
 Deploy via Docker Compose:  
 ```bash
-docker-compose up user-service
+docker-compose up users-service
 ```
 
 ---
@@ -199,5 +199,5 @@ docker-compose up user-service
 - **Metrics Endpoint**: Accessible at `http://localhost:9201/metrics` for integration with Prometheus/Grafana.  
 - **Logging**: Structured logs output for debugging and audit trails.  
 
---- 
+---
 

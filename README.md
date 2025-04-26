@@ -26,13 +26,11 @@ JWT-based authentication secures every API call. Tokens issued by the User Servi
 
 Monitor every heartbeat of the system with **Prometheus metrics** and **Grafana dashboards**. Track API latency, Kafka consumer lag, cache hit ratios, and more in real time.
 
-### (Questionable recheck this)
-
 ---
 
 ## 🏗️ Architecture Overview
 
-![E-Commerce Microservices Architecture Diagram](architecture-diagram-placeholder.png)
+![E-Commerce Microservices Architecture Diagram](archDiagram2.png)
 
 ### Core Components Flow
 
@@ -108,7 +106,7 @@ docker-compose up --build
 ---
 
 **Crafted with scalability in mind.**  
-[![LinkedIn](https://img.shields.io/badge/Connect-%230077B5?logo=linkedin)](your-profile)
-[![Email](https://img.shields.io/badge/Read%20Blog-FF5722?logo=medium)](your-blog)
+[![LinkedIn](https://img.shields.io/badge/Connect-%230077B5?logo=linkedin)](https://www.linkedin.com/in/ayushjrathod/)  
+[![Email](https://img.shields.io/badge/Email-%23EA4335?logo=gmail)](mailto:ayushjrathod7@gmail.com)
 
 ---

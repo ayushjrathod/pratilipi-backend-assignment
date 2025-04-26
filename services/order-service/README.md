@@ -168,7 +168,7 @@ order-service/
 ### Docker Deployment
 Deploy using the project's root `docker-compose.yml`:
 ```bash
-docker-compose up order-service
+docker-compose up orders-service
 ```
 
 ---
