@@ -1,0 +1,225 @@
+services:
+  # Application Services
+  users-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      API_SECRET: secret
+      KAFKA_BROKERS: kafka:9092
+      MONGO_URI: mongodb://username:password@mongo-users:27017/users-service?authSource=admin
+      USERS_SERVICE_PORT: '8000'
+    ports:
+      - '8001:8000'
+    depends_on:
+      - mongo-users
+      - kafka
+    networks:
+      - backend
+
+  orders-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      KAFKA_BROKERS: kafka:9092
+      ORDERS_SERVICE_PORT: 8000
+      USERS_SERVICE_URL: http://users-service:8000
+      PRODUCTS_SERVICE_URL: http://products-service:8000
+      MONGO_URI: mongodb://username:password@mongo-orders:27017/orders-service?authSource=admin
+    ports:
+      - 8002:8000
+    depends_on:
+      - mongo-orders
+      - kafka
+    networks:
+      - backend
+
+  products-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      PRODUCTS_SERVICE_PORT: 8000
+      KAFKA_BROKERS: kafka:9092
+      MONGO_URI: mongodb://username:password@mongo-products:27017/products-service?authSource=admin
+    ports:
+      - 8003:8000
+    depends_on:
+      - mongo-products
+      - kafka
+    networks:
+      - backend
+
+  notifications-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      NOTIFICATIONS_SERVICE_PORT: 8004
+      KAFKA_BROKERS: kafka:9092
+      MONGO_URI: mongodb://username:password@mongo-notifications:27017/notifications-service?authSource=admin
+      SMTP_HOST: 'smtp.gmail.com'
+      SMTP_PORT: '587'
+      SMTP_SECURE: 'false'
+      SMTP_USER: 'ayushjrathod75@gmail.com'
+      SMTP_PASS: 'gxlx dfvl wpty avwh'
+      SENDER_EMAIL: 'ayushjrathod75@gmail.com'
+      USERS_SERVICE_URL: 'http://users-service:8000'
+      NOTIFICATIONS_SERVICE_URL: 'http://notifications-service:8004'
+    ports:
+      - 8004:8000
+    depends_on:
+      - mongo-notifications
+      - kafka
+    networks:
+      - backend
+
+  recommendations-service:
+    build:
+      context: ./services/recommendation-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      RECOMMENDATIONS_SERVICE_PORT: 8000
+      KAFKA_BROKERS: kafka:9092
+      USERS_SERVICE_URL: http://users-service:8000
+      PRODUCTS_SERVICE_URL: http://products-service:8000
+      ORDERS_SERVICE_URL: http://orders-service:8000
+      REDIS_URL: redis://cache-db:6379
+    ports:
+      - 8005:8000
+    depends_on:
+      - cache-db
+      - orders-service
+      - users-service
+      - products-service
+      - kafka
+    networks:
+      - backend
+
+  graphql-gateway:
+    build:
+      context: ./graphql-gateway
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      API_SECRET: secret
+      USERS_SERVICE_URL: http://users-service:8000
+      ORDERS_SERVICE_URL: http://orders-service:8000
+      PRODUCTS_SERVICE_URL: http://products-service:8000
+      REDIS_URL: redis://cache-db:6379
+      KAFKA_BROKERS: kafka:9092
+      PORT: '4000'
+    ports:
+      - '4000:4000'
+    depends_on:
+      - users-service
+      - orders-service
+      - products-service
+      - cache-db
+      - kafka
+    networks:
+      - backend
+
+  # Databases
+  mongo-users:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: users-service
+    ports:
+      - 27017:27017
+    networks:
+      - backend
+
+  mongo-orders:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: orders-service
+    ports:
+      - 27018:27017
+    networks:
+      - backend
+
+  mongo-products:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: products-service
+    ports:
+      - 27019:27017
+    networks:
+      - backend
+
+  mongo-notifications:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: notifications-service
+    ports:
+      - 27020:27017
+    networks:
+      - backend
+
+  cache-db:
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - backend
+
+  # Message Broker
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_CREATE_TOPICS: 'order-events:1:1,inventory-events:1:1, notification-events:1:1'
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+    networks:
+      - backend
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+    networks:
+      - backend
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+networks:
+  backend:
+
+volumes:
+  grafana-storage:
