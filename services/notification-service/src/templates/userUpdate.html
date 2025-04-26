@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {{styles}}
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Welcome aboard, {{userName}}! 🎉</h1>
+      </div>
+      <div class="content">
+        <p>
+          We're thrilled to have you join our platform! Your account has been successfully created
+          and is now ready for use.
+        </p>
+
+        <div class="info-box">
+          <h3>🎯 What's Next?</h3>
+          <ul>
+            <li>✨ Explore our platform's extensive features</li>
+            <li>📱 Complete your profile settings</li>
+            <li>🔔 Stay updated with important notifications</li>
+          </ul>
+        </div>
+
+        <p>
+          Need help getting started? Our dedicated support team is ready to assist you on your
+          journey.
+        </p>
+
+        <a href="{{platformUrl}}" class="button">Get Started Now</a>
+
+        <p>Welcome to the community!</p>
+      </div>
+      <div class="footer">
+        <p>© {{currentYear}} Our Backend System. All rights reserved.</p>
+        <p>You received this email because you signed up for our service.</p>
+        <div class="social-links">
+          <a href="#">Twitter</a> • <a href="#">LinkedIn</a> • <a href="#">Facebook</a>
+        </div>
+      </div>
+      <img src="{{trackingUrl}}" style="display: none" alt="" />
+    </div>
+  </body>
+</html>
