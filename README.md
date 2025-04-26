@@ -70,8 +70,8 @@ Monitor every heartbeat of the system with **Prometheus metrics** and **Grafana 
 ### Launch using Docker Compose
 
 ```bash
-git clone https://github.com/your-repo/ecommerce-microservices.git
-cd ecommerce-microservices
+git clone https://github.com/ayushjrathod/pratilipi-backend-assignment.git
+cd pratilipi-backend-assignment
 
 # Spin up all services with metrics & monitoring
 docker-compose up --build
@@ -101,7 +101,7 @@ docker-compose up --build
 ## 📚 Documentation & Resources
 
 - **API Reference**: `/docs` endpoint in each service (Swagger UI)
-- **Postman Collection**: `E-Commerce Microservices.postman_collection.json`
+- **Postman Collection**:(https://app.getpostman.com/join-team?invite_code=2f0f958dbdac83c5129d55eb13668602750e94255aa29b30644522a487d41629&target_code=4f5902863a70cdcf78882cef528534d7)(being updated)
 
 ---
 

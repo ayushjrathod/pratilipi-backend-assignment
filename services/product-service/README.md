@@ -102,8 +102,7 @@ product-service/
 ```bash
 docker-compose up products-service
 ```
-### Postman Collection 
-(https://app.getpostman.com/join-team?invite_code=2f0f958dbdac83c5129d55eb13668602750e94255aa29b30644522a487d41629&target_code=4f5902863a70cdcf78882cef528534d7)
+
 
 ## Event Handling Specifications
 
