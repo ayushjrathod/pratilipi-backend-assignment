@@ -109,12 +109,7 @@ const getProductsByCategory = async (req: Request, res: Response): Promise<void>
     }
 
     const products = await Product.find({ category: category.trim() });
-    if (!products.length) {
-      res.status(404).json({ error: `No products found in category: ${category}` });
-      return;
-    }
-
-    res.status(200).json({ result: products });
+    res.status(200).json({ data: { products } }); // Changed to match expected response structure
   } catch (err) {
     res.status(500).json({ error: 'Unexpected error occurred' });
   }

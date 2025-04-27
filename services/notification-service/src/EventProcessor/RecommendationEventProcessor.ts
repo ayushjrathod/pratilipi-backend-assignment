@@ -220,31 +220,11 @@ export class RecommendationEventProcessor {
     }
   }
 
-  private formatRecommendationEmail(recommendations: RecommendationItem[]): string {
-    const productList = recommendations
-      .map(
-        (product) => `
-        <li>
-          <strong>${product.name}</strong><br>
-          Category: ${product.category}<br>
-          Price: $${product.price.toFixed(2)}
-        </li>
-      `
-      )
-      .join('');
-
-    return `
-      <html>
-        <body>
-          <h1>Your Personalized Product Picks!</h1>
-          <p>We've handpicked these recommendations just for you, based on your shopping preferences:</p>
-          <ul>
-            ${productList.trim()}
-          </ul>
-          <p>Discover more recommendations from "Recommendations from Ecommerce Backend System"</p>
-        </body>
-      </html>
-    `;
+  private formatRecommendationEmail(recommendations: RecommendationItem[]): EmailContent {
+    return {
+      recommendations,
+      itemCount: recommendations.length,
+    };
   }
 
   private async markNotificationProcessed(

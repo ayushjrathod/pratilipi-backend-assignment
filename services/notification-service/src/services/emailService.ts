@@ -100,7 +100,7 @@ class EmailService {
       [NotificationType.ORDER_UPDATE]: 'orderUpdate',
       [NotificationType.PROMOTION]: 'promotion',
       [NotificationType.EMAIL]: 'generic',
-      [NotificationType.RECOMMENDATION]: 'generic', // Using generic template for recommendations
+      [NotificationType.RECOMMENDATION]: 'recommendation',
     };
 
     const templateName = templateMapping[type] || 'generic';

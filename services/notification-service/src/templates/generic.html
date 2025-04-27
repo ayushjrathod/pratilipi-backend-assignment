@@ -8,18 +8,12 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>New Notification</h1>
+        <h1>{{title}}</h1>
       </div>
-      <div class="content">
-        <p>Hello {{userName}},</p>
-        <p>You have a new notification:</p>
-        <div class="pre-formatted">{{content}}</div>
-      </div>
+      <div class="content">{{content}}</div>
       <div class="footer">
-        <p>© {{currentYear}} Our Backend System</p>
-        <p>This is an automated message, please do not reply.</p>
+        <p>© {{currentYear}} Our Platform. All rights reserved.</p>
       </div>
-      <img src="{{trackingUrl}}" style="display: none" alt="" />
     </div>
   </body>
 </html>

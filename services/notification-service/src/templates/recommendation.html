@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {{styles}}
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Your Personalized Product Picks!</h1>
+      </div>
+      <div class="content">
+        <p>Dear {{userName}},</p>
+        <p>We've handpicked {{content.itemCount}} recommendations just for you:</p>
+
+        <div class="info-box">
+          {{#each content.recommendations}}
+          <div class="recommendation-item">
+            <h3>{{this.name}}</h3>
+            <p>Category: {{this.category}}</p>
+            <p>Price: ${{this.price}}</p>
+          </div>
+          {{/each}}
+        </div>
+
+        <a href="{{platformUrl}}/recommendations" class="button">View All Recommendations</a>
+      </div>
+      <div class="footer">
+        <p>© {{currentYear}} Our Platform. All rights reserved.</p>
+        <p>You received this email because you subscribed to product recommendations.</p>
+        {{#if trackingUrl}}
+        <img src="{{trackingUrl}}" alt="" style="display: none" />
+        {{/if}}
+      </div>
+    </div>
+  </body>
+</html>

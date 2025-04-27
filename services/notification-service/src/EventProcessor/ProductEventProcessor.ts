@@ -81,15 +81,9 @@ export class ProductEventProcessor {
       `🎉 Special Promotion Just for You, ${content.name}!`,
       NotificationType.PROMOTION,
       {
-        subject: `🎉 Special Promotion Just for You, ${content.name}!`,
-        html: `<html>
-            <body>
-              <h2>Hey ${content.name}, 🎁</h2>
-              <p>${content.message}</p>
-              <p>✨ Don't miss out—grab this special offer while it lasts!</p>
-              <p>Best Regards, <br><strong>Your Favorite Store</strong></p>
-            </body>
-          </html>`,
+        subject: `Promotion: Dont miss out on this, ${content.name}!`,
+        message: content.message,
+        name: content.name,
       }
     );
   }

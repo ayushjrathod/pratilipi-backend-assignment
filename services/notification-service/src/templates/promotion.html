@@ -8,20 +8,28 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>Special Offer Just for You! 🎁</h1>
+        <h1>Exclusive Offer</h1>
       </div>
       <div class="content">
         <p>Dear {{userName}},</p>
-        <p>We've got something special that we think you'll love:</p>
+        <p>We've selected a special offer just for you:</p>
+
         <div class="info-box">{{content}}</div>
-        <a href="{{platformUrl}}/promotions" class="button">View Offer</a>
-        <p><small>* Terms and conditions apply. Limited time offer.</small></p>
+
+        <a href="{{platformUrl}}/promotions" class="button">View Details</a>
+
+        <p><small>This offer is subject to terms and conditions.</small></p>
       </div>
       <div class="footer">
-        <p>© {{currentYear}} Our Backend System. All rights reserved.</p>
-        <p>You can unsubscribe from promotional emails at any time.</p>
+        <p>© {{currentYear}} Our Platform. All rights reserved.</p>
+        <p>
+          To unsubscribe from promotional emails, visit your
+          <a href="{{platformUrl}}/preferences">preferences</a>.
+        </p>
+        {{#if trackingUrl}}
+        <img src="{{trackingUrl}}" alt="" style="display: none" />
+        {{/if}}
       </div>
-      <img src="{{trackingUrl}}" style="display: none" alt="" />
     </div>
   </body>
 </html>
