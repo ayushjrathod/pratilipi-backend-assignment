@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 import { producer } from './kafka/kafka';
 import { Product } from './models/product';
@@ -20,7 +20,7 @@ interface ProductRequestBody {
 // Validation utilities
 const isValidObjectId = (id: string): boolean => /^[a-fA-F0-9]{24}$/.test(id);
 
-const validateProduct = (body: any): ProductRequestBody => {
+const validateProduct = (body: Record<string, unknown>): ProductRequestBody => {
   const { name, price, quantity, category } = body;
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -29,7 +29,8 @@ const validateProduct = (body: any): ProductRequestBody => {
   if (typeof price !== 'number' || price <= 0) {
     throw new Error('Price must be a positive number');
   }
-  if (!Number.isInteger(quantity) || quantity < 0) {
+  const quantityNum = Number(quantity);
+  if (!Number.isInteger(quantityNum) || quantityNum < 0) {
     throw new Error('Quantity must be a non-negative integer');
   }
   if (!category || typeof category !== 'string' || category.trim() === '') {
@@ -39,15 +40,15 @@ const validateProduct = (body: any): ProductRequestBody => {
   return {
     name: name.trim(),
     price,
-    quantity,
+    quantity: quantityNum,
     category: category.trim(),
   };
 };
 
 // Middleware
 const validateRequestBody =
-  (validator: (body: any) => any) =>
-  (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+  (validator: (body: Record<string, unknown>) => ProductRequestBody) =>
+  (req: Request, res: Response, next: NextFunction): void => {
     try {
       req.body = validator(req.body);
       next();
@@ -57,7 +58,7 @@ const validateRequestBody =
   };
 
 // Route handlers
-const addProduct = async (req: express.Request, res: express.Response): Promise<void> => {
+const addProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const product = await Product.create(req.body);
     await producer.send({
@@ -70,7 +71,7 @@ const addProduct = async (req: express.Request, res: express.Response): Promise<
   }
 };
 
-const getProductById = async (req: express.Request, res: express.Response): Promise<void> => {
+const getProductById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
@@ -90,7 +91,7 @@ const getProductById = async (req: express.Request, res: express.Response): Prom
   }
 };
 
-const getAllProducts = async (_req: express.Request, res: express.Response): Promise<void> => {
+const getAllProducts = async (_req: Request, res: Response): Promise<void> => {
   try {
     const products = await Product.find({});
     res.json({ result: products });
@@ -99,10 +100,7 @@ const getAllProducts = async (_req: express.Request, res: express.Response): Pro
   }
 };
 
-const getProductsByCategory = async (
-  req: express.Request,
-  res: express.Response
-): Promise<void> => {
+const getProductsByCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { category } = req.query;
     if (!category || typeof category !== 'string' || category.trim() === '') {
@@ -122,10 +120,44 @@ const getProductsByCategory = async (
   }
 };
 
+const updateProduct = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      res.status(400).json({ error: 'Invalid product ID' });
+      return;
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      res.status(404).json({ error: 'Product not found' });
+      return;
+    }
+
+    // Only allow updating quantity for now
+    if ('quantity' in req.body && typeof req.body.quantity === 'number') {
+      product.quantity = req.body.quantity;
+      await product.save();
+
+      await producer.send({
+        topic: 'inventory-events',
+        messages: [{ value: JSON.stringify({ type: 'product-updated', payload: product }) }],
+      });
+
+      res.json({ result: product });
+    } else {
+      res.status(400).json({ error: 'Only quantity updates are supported' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Unexpected error occurred' });
+  }
+};
+
 // Routes
 app.post('/', validateRequestBody(validateProduct), addProduct);
 app.get('/id/:id', getProductById);
 app.get('/', getAllProducts);
 app.get('/category', getProductsByCategory);
+app.patch('/:id', updateProduct);
 
 export default app;

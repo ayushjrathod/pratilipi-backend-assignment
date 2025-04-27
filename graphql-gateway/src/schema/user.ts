@@ -51,8 +51,8 @@ const userTypeDefs = buildSchema(`
     }
 
     type Query {
-        users: [User]
-        user(_id: ID!): User
+        fetchAllUsers: [User]
+        fetchUserById(_id: ID!): User
     }
 
     type Mutation {

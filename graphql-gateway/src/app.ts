@@ -13,8 +13,8 @@ import { userTypeDefs } from './schema/user';
 // Define resolvers
 const resolvers = {
   // User resolvers
-  users: UserService.getAll,
-  user: UserService.getById,
+  fetchAllUsers: UserService.getAll,
+  fetchUserById: UserService.getById,
   signin: UserService.signin,
   signup: UserService.signup,
   updateUserPreferences: UserService.updatePreferences,
