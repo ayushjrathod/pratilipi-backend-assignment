@@ -98,15 +98,19 @@ docker-compose up --build
 - **Promotional Emails**: Newsletters, sales (Standard Queue with rate limiting).
 - **Automatic Retries**: Failed emails land in Kafka DLQ for later processing.
 
-## 📚 Documentation & Resources
+## Postman Collection
 
-- **API Reference**: `/docs` endpoint in each service (Swagger UI)
-- **Postman Collection**:(https://app.getpostman.com/join-team?invite_code=2f0f958dbdac83c5129d55eb13668602750e94255aa29b30644522a487d41629&target_code=4f5902863a70cdcf78882cef528534d7)(being updated)
+- This collection is a workflow which will populate the database with mock data and the functionality of the application can be tested.
+  - [Postman Collection](https://pratilipi-ayush-submission.postman.co/workspace/pratilipi-ayush-submission~2348e80a-9c52-4e30-86b1-c6f835587152/collection/30091103-a715c57f-468b-413a-9371-246ff2c0407a?action=share&creator=30091103)
+- Using this collection, individual services can be tested as well. There are also example requests and responses stored for each service.
+  - [Postman Collection](https://pratilipi-ayush-submission.postman.co/workspace/pratilipi-ayush-submission~2348e80a-9c52-4e30-86b1-c6f835587152/collection/30091103-c2321ae5-cb54-4d0d-a72f-7efdddfbb0bf?action=share&creator=30091103)
 
 ---
 
-**Crafted with scalability in mind.**  
-[![LinkedIn](https://img.shields.io/badge/Connect-%230077B5?logo=linkedin)](https://www.linkedin.com/in/ayushjrathod/)  
-[![Email](https://img.shields.io/badge/Email-%23EA4335?logo=gmail)](mailto:ayushjrathod7@gmail.com)
+**Crafted with scalability in mind.**
+
+- Feel free to reach out for any queries.
+  - [LinkedIn](https://www.linkedin.com/in/ayushjrathod/)
+  - [Email](mailto:ayushjrathod7@gmail.com)
 
 ---
