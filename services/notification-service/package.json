@@ -9,7 +9,7 @@
     "build": "tsc",
     "lint": "eslint . --ext .ts"
   },
-  "author": "ayushjrathod <ayushjrathod@gmail.com>",
+  "author": "ayushjrathod <ayushjrathod7@gmail.com>",
   "dependencies": {
     "@types/node-cron": "^3.0.11",
     "axios": "^1.7.9",

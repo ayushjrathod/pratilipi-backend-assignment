@@ -9,7 +9,10 @@ config();
 
 const portStr = process.env.USERS_SERVICE_PORT || '8000';
 const PORT = Number.isNaN(parseInt(portStr, 10)) ? 8000 : parseInt(portStr, 10);
-const METRICS_PORT = process.env.METRICS_PORT;
+const metricsPortStr = process.env.METRICS_PORT || '9201';
+const METRICS_PORT = Number.isNaN(parseInt(metricsPortStr, 10))
+  ? 9201
+  : parseInt(metricsPortStr, 10);
 
 // Setup Prometheus metrics
 const setupMetrics = (): Application => {
@@ -27,11 +30,11 @@ const setupMetrics = (): Application => {
 
 // Database and Kafka connection
 const setupConnections = async (): Promise<void> => {
-  const mongoUrl = process.env.MONGO_URI;
-  if (!mongoUrl) {
+  const mongoUri = process.env.MONGO_URI;
+  if (!mongoUri) {
     throw new Error('Missing Environment variable: MONGO_URI');
   }
-  await mongoose.connect(mongoUrl);
+  await mongoose.connect(mongoUri);
   await producer.connect();
 };
 
@@ -61,7 +64,7 @@ const startServer = async (): Promise<void> => {
 
     // Start metrics server
     const metricsApp = setupMetrics();
-    metricsApp.listen(METRICS_PORT, () => {
+    metricsApp.listen(METRICS_PORT, '0.0.0.0', () => {
       console.log(`Metrics available at http://localhost:${METRICS_PORT}/metrics`);
     });
   } catch (error) {
@@ -72,5 +75,7 @@ const startServer = async (): Promise<void> => {
 // Handle unexpected errors
 process.on('unhandledRejection', handleShutdown);
 process.on('uncaughtException', handleShutdown);
+process.on('SIGTERM', handleShutdown);
+process.on('SIGINT', handleShutdown);
 
 startServer();

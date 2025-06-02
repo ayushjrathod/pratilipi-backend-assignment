@@ -10,8 +10,10 @@ services:
       KAFKA_BROKERS: kafka:9092
       MONGO_URI: mongodb://username:password@mongo-users:27017/users-service?authSource=admin
       USERS_SERVICE_PORT: '8000'
+      METRICS_PORT: '9201'
     ports:
       - '8001:8000'
+      - '9201:9201'
     depends_on:
       - mongo-users
       - kafka
