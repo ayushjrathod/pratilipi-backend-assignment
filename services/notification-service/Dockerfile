@@ -9,8 +9,4 @@ RUN npm install
 
 COPY . .
 
-ENV PORT=8000
-
-EXPOSE $PORT
-
 CMD ["npx", "ts-node", "src/index.ts"]

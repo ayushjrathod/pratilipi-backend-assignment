@@ -9,11 +9,11 @@ services:
       API_SECRET: secret
       KAFKA_BROKERS: kafka:9092
       MONGO_URI: mongodb://username:password@mongo-users:27017/users-service?authSource=admin
-      USERS_SERVICE_PORT: '8000'
-      METRICS_PORT: '9201'
+      USERS_SERVICE_PORT: 8000
+      METRICS_PORT: 9201
     ports:
-      - '8001:8000'
-      - '9201:9201'
+      - 8001:8000
+      - 9201:9201
     depends_on:
       - mongo-users
       - kafka
@@ -27,12 +27,14 @@ services:
     environment:
       NODE_ENV: development
       KAFKA_BROKERS: kafka:9092
-      ORDERS_SERVICE_PORT: 8000
       USERS_SERVICE_URL: http://users-service:8000
       PRODUCTS_SERVICE_URL: http://products-service:8000
       MONGO_URI: mongodb://username:password@mongo-orders:27017/orders-service?authSource=admin
+      ORDERS_SERVICE_PORT: 8000
+      METRICS_PORT: 9202
     ports:
       - 8002:8000
+      - 9202:9202
     depends_on:
       - mongo-orders
       - kafka
@@ -45,11 +47,13 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
-      PRODUCTS_SERVICE_PORT: 8000
       KAFKA_BROKERS: kafka:9092
       MONGO_URI: mongodb://username:password@mongo-products:27017/products-service?authSource=admin
+      PRODUCTS_SERVICE_PORT: 8000
+      METRICS_PORT: 9203
     ports:
       - 8003:8000
+      - 9203:9203
     depends_on:
       - mongo-products
       - kafka
@@ -62,7 +66,6 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
-      NOTIFICATIONS_SERVICE_PORT: 8004
       KAFKA_BROKERS: kafka:9092
       MONGO_URI: mongodb://username:password@mongo-notifications:27017/notifications-service?authSource=admin
       SMTP_HOST: 'smtp.gmail.com'
@@ -73,6 +76,7 @@ services:
       SENDER_EMAIL: 'ayushjrathod75@gmail.com'
       USERS_SERVICE_URL: 'http://users-service:8000'
       NOTIFICATIONS_SERVICE_URL: 'http://notifications-service:8004'
+      NOTIFICATIONS_SERVICE_PORT: 8004
     ports:
       - 8004:8000
     depends_on:
@@ -87,14 +91,16 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
-      RECOMMENDATIONS_SERVICE_PORT: 8000
       KAFKA_BROKERS: kafka:9092
       USERS_SERVICE_URL: http://users-service:8000
       PRODUCTS_SERVICE_URL: http://products-service:8000
       ORDERS_SERVICE_URL: http://orders-service:8000
       REDIS_URL: redis://cache-db:6379
+      RECOMMENDATIONS_SERVICE_PORT: 8000
+      METRICS_PORT: 9204
     ports:
       - 8005:8000
+      - 9204:9204
     depends_on:
       - cache-db
       - orders-service
