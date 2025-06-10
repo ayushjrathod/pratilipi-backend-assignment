@@ -1,5 +1,12 @@
 export type OrderEvent = 'order-placed' | 'order-shipped';
 
+export interface ProductRequestBody {
+  name: string;
+  price: number;
+  quantity: number;
+  category: string;
+}
+
 export type OrderEventPayload = {
   type: OrderEvent;
   payload: {

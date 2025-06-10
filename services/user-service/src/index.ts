@@ -14,12 +14,13 @@ const METRICS_PORT = Number.isNaN(parseInt(metricsPortStr, 10))
   ? 9201
   : parseInt(metricsPortStr, 10);
 
-// Setup Prometheus metrics
-const setupMetrics = (): Application => {
+const setupMetrics = (): client.Registry => {
   const register = new client.Registry();
   register.setDefaultLabels({ app: 'user-service' });
   client.collectDefaultMetrics({ register });
-
+  return register;
+};
+const setupMetricsServer = (register: client.Registry): Application => {
   const metricsApp = express();
   metricsApp.get('/metrics', async (req, res) => {
     res.set('Content-Type', register.contentType);
@@ -63,7 +64,7 @@ const startServer = async (): Promise<void> => {
     });
 
     // Start metrics server
-    const metricsApp = setupMetrics();
+    const metricsApp = setupMetricsServer(setupMetrics());
     metricsApp.listen(METRICS_PORT, '0.0.0.0', () => {
       console.log(`Metrics available at http://localhost:${METRICS_PORT}/metrics`);
     });

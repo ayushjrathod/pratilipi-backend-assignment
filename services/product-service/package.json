@@ -13,7 +13,6 @@
   },
   "author": "ayushjrathod <ayushjrathod7@gmail.com>",
   "dependencies": {
-    "@types/node-cron": "^3.0.11",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "kafkajs": "^2.2.4",
@@ -24,9 +23,11 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.10.10",
+    "@types/node-cron": "^3.0.11",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.0",
