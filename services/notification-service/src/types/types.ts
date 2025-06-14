@@ -59,3 +59,19 @@ export interface NotificationPayload {
     retryCount?: number;
   };
 }
+
+export interface NotificationRequest {
+  userId: string;
+  type: NotificationType;
+  content: string;
+  priority?: NotificationPriority;
+  metadata?: Record<string, unknown>;
+  trackingId?: string;
+}
+
+export interface QueryParams {
+  userId: string;
+  priority?: NotificationPriority;
+  read?: boolean;
+  _id?: { $in: string[] };
+}

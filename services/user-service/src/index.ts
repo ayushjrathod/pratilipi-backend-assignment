@@ -45,8 +45,10 @@ const handleShutdown = async (error?: Error): Promise<never> => {
     console.error('Fatal error:', error);
   }
   try {
-    await producer.disconnect();
-    await mongoose.disconnect();
+    await Promise.allSettled([
+      mongoose.connection.close(),
+      producer.disconnect(),
+    ]);
   } catch (err) {
     console.error('Error during shutdown:', err);
   }
@@ -66,7 +68,7 @@ const startServer = async (): Promise<void> => {
     // Start metrics server
     const metricsApp = setupMetricsServer(setupMetrics());
     metricsApp.listen(METRICS_PORT, '0.0.0.0', () => {
-      console.log(`Metrics available at http://localhost:${METRICS_PORT}/metrics`);
+      console.log(`Metrics available at port ${METRICS_PORT}/metrics`);
     });
   } catch (error) {
     await handleShutdown(error as Error);

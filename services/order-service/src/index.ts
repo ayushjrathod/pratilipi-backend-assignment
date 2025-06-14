@@ -67,8 +67,7 @@ const startServer = async (): Promise<void> => {
     });
 
     // Start metrics server
-    const register = setupMetrics();
-    const metricsApp = setupMetricsServer(register);
+    const metricsApp = setupMetricsServer(setupMetrics());
     metricsApp.listen(METRICS_PORT, '0.0.0.0', () => {
       console.log(`Metrics available at http://localhost:${METRICS_PORT}/metrics`);
     });

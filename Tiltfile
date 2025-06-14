@@ -11,3 +11,5 @@ watch_file('docker-compose.yml')
 #   'echo notifier source changed',
 #   deps=['notifier']
 # )
+
+# sudo /home/ayra/.local/bin/tilt up --stream=true

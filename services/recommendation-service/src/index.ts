@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import client from 'prom-client';
@@ -7,48 +7,34 @@ import { z } from 'zod';
 import { producer } from './kafka/kafka';
 import { RecommendationService } from './services/RecommendationService';
 
-dotenv.config();
+config();
 
-// Create a Registry and configure default labels
-const register = new client.Registry();
-register.setDefaultLabels({
-  app: 'recommendation-service',
-});
+const portStr = process.env.USERS_SERVICE_PORT || '8000';
+const PORT = Number.isNaN(parseInt(portStr, 10)) ? 8000 : parseInt(portStr, 10);
+const metricsPortStr = process.env.METRICS_PORT || '9204';
+const METRICS_PORT = Number.isNaN(parseInt(metricsPortStr, 10))
+  ? 9204
+  : parseInt(metricsPortStr, 10);
 
-// Define service metrics
-const metrics = {
-  orderProcessingDuration: new client.Histogram({
-    name: 'order_processing_duration_seconds',
-    help: 'Duration of order processing in seconds',
-    buckets: [1, 2, 5, 10, 20, 30, 60],
-  }),
 
-  recommendationsGenerated: new client.Counter({
-    name: 'recommendations_generated_total',
-    help: 'Total number of recommendations generated',
-  }),
+const setupMetrics = ():client.Registry=>{
+  const register = new client.Registry();
+  register.setDefaultLabels({ app: 'recommendation-service' });
+  client.collectDefaultMetrics({ register });
+  return register;
+}
 
-  processingErrors: new client.Counter({
-    name: 'processing_errors_total',
-    help: 'Total number of processing errors',
-    labelNames: ['error_type'],
-  }),
-
-  redisConnectionStatus: new client.Gauge({
-    name: 'redis_connection_status',
-    help: 'Status of Redis connection (1 for connected, 0 for disconnected)',
-  }),
-
-  kafkaConnectionStatus: new client.Gauge({
-    name: 'kafka_connection_status',
-    help: 'Status of Kafka connection (1 for connected, 0 for disconnected)',
-  }),
+const setupMetricsServer = (register: client.Registry): express.Application => {
+  const metricsApp = express();
+  metricsApp.get(
+    '/metrics',
+    async (req: express.Request, res: express.Response) => {
+      res.set('Content-Type', register.contentType);
+      res.end(await register.metrics());
+    }
+  );
+  return metricsApp;
 };
-
-// Register all metrics
-Object.values(metrics).forEach((metric) => register.registerMetric(metric));
-
-client.collectDefaultMetrics({ register });
 
 // Initialize Express app and recommendation service
 const app = express();
@@ -70,33 +56,6 @@ const FeedbackSchema = z.object({
   isPositive: z.boolean(),
 });
 
-// Error handler middleware
-const errorHandler = (
-  err: Error,
-  req: express.Request,
-  res: express.Response,
-  _next: express.NextFunction
-) => {
-  console.error('Error:', err);
-  metrics.processingErrors.inc({ error_type: err.name || 'unknown' });
-  res.status(500).json({
-    status: 'error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
-  });
-};
-
-// Metrics endpoint
-app.get(
-  '/metrics',
-  async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-      res.set('Content-Type', register.contentType);
-      res.end(await register.metrics());
-    } catch (error) {
-      next(error);
-    }
-  }
-);
 
 // Manual trigger endpoint (for testing)
 app.post(
@@ -132,7 +91,6 @@ app.post(
       };
 
       await recommendationService.processFeedback(feedback);
-      metrics.recommendationsGenerated.inc();
 
       res.json({
         status: 'success',
@@ -152,74 +110,53 @@ app.post(
   }
 );
 
-// Global error handling middleware
-app.use(errorHandler);
-
 // Service startup sequence
-async function startServices(): Promise<void> {
+async function setupConnections(): Promise<void> {
   try {
     await producer.connect();
-    metrics.kafkaConnectionStatus.set(1);
-    console.log('Kafka Producer connected successfully');
-
-    // Start recommendation service
     await recommendationService.start();
-    metrics.redisConnectionStatus.set(1);
-    console.log('Recommendation Service started successfully');
-
-    // Start HTTP server
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
   } catch (error) {
     console.error('Failed to start services:', error);
-    metrics.processingErrors.inc({ error_type: 'startup' });
     process.exit(1);
   }
 }
 
 // Graceful shutdown handler
-async function shutdownGracefully(): Promise<never> {
-  console.log('Initiating graceful shutdown...');
-
-  // Set maximum shutdown timeout
-  const shutdownTimeout = setTimeout(() => {
-    console.error('Forced shutdown due to timeout');
-    process.exit(1);
-  }, 10000); // 10 seconds timeout
+const handleShutdown = async (error?: Error): Promise<never> => {
+  if (error) {
+    console.error('Fatal error during shutdown:', error);
+  }
 
   try {
-    await Promise.race([
-      recommendationService.stop(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Service stop timeout')), 5000)),
-    ]);
-    metrics.redisConnectionStatus.set(0);
-
-    await Promise.race([
-      producer.disconnect(),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Kafka disconnect timeout')), 5000)
-      ),
-    ]);
-    metrics.kafkaConnectionStatus.set(0);
-
-    clearTimeout(shutdownTimeout);
-    console.log('All services stopped successfully');
-    process.exit(0);
-  } catch (error) {
-    clearTimeout(shutdownTimeout);
-    console.error('Error during shutdown:', error);
-    metrics.processingErrors.inc({ error_type: 'shutdown' });
-    process.exit(1);
+      await recommendationService.stop();
+      await producer.disconnect();
+  } catch (err) {
+    console.error('Error during shutdown:', err);
+    process.exit(error ? 1 : 0);
   }
 }
 
-process.on('SIGTERM', shutdownGracefully);
-process.on('SIGINT', shutdownGracefully);
+const startServer = async():Promise<void> =>{
+  try{
+    await setupConnections();
 
-if (require.main === module) {
-  startServices();
+        // Start HTTP server
+        app.listen(PORT,'0.0.0.0', () => {
+          console.log(`Server running on port ${PORT}`);
+        });
+        // Start metrics server
+        const metrics = setupMetricsServer(setupMetrics());
+        metrics.listen(METRICS_PORT,'0.0.0.0', () => {
+          console.log(`Metrics available at http://localhost:${METRICS_PORT}`);
+        });
+  } catch (error) {
+    await handleShutdown(error as Error);
+  }
 }
 
-export { app, metrics, register };
+process.on('unhandledRejection', handleShutdown);
+process.on('uncaughtException', handleShutdown);
+process.on('SIGTERM', handleShutdown);
+process.on('SIGINT', handleShutdown);
+
+startServer();

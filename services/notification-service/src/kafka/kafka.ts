@@ -22,24 +22,7 @@ const consumer = kafka.consumer({
   rebalanceTimeout: 60000,
 });
 
-const connectProducer = async () => {
-  try {
-    await producer.connect();
-    console.log('Kafka Producer Connected');
-  } catch (error) {
-    console.error('Kafka Producer Connection Failed', error);
-    throw error;
-  }
-};
 
-const connectConsumer = async () => {
-  try {
-    await consumer.connect();
-    console.log('Kafka Consumer Connected');
-  } catch (error) {
-    console.error('Kafka Consumer Connection Failed', error);
-    throw error;
-  }
-};
 
-export { connectConsumer, connectProducer, consumer, kafka, producer };
+
+export { consumer, kafka, producer };
