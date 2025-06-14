@@ -7,6 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(morgan('common'));
 
-app.use('/orders', orderRoutes); // Assuming you want to prefix order routes with /orders
+app.use('/', orderRoutes); // Assuming you want to prefix order routes with /orders
 
 export default app;

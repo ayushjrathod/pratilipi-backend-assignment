@@ -10,6 +10,6 @@ app.use(express.json());
 app.use(morgan('common'));
 
 // Routes
-app.use('/notifications', notificationRoutes);
+app.use('/', notificationRoutes);
 
 export default app;
