@@ -2,9 +2,6 @@ import { Request, Response } from 'express';
 import { producer } from '../kafka/kafka';
 import { Product } from '../models/product';
 
-// Validation utilities
-const isValidObjectId = (id: string): boolean => /^[a-fA-F0-9]{24}$/.test(id);
-
 // Route handlers
 export const addProduct = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -22,10 +19,6 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
 export const getProductById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      res.status(400).json({ error: 'Invalid product ID' });
-      return;
-    }
 
     const product = await Product.findById(id);
     if (!product) {
@@ -33,7 +26,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    res.json({ result: product });
+    res.status(200).json({ result: product });
   } catch (err) {
     res.status(500).json({ error: 'Unexpected error occurred' });
   }
@@ -42,7 +35,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 export const getAllProducts = async (_req: Request, res: Response): Promise<void> => {
   try {
     const products = await Product.find({});
-    res.json({ result: products });
+    res.status(200).json({ result: products });
   } catch (err) {
     res.status(500).json({ error: 'Unexpected error occurred' });
   }
@@ -57,7 +50,7 @@ export const getProductsByCategory = async (req: Request, res: Response): Promis
     }
 
     const products = await Product.find({ category: category.trim() });
-    res.status(200).json({ data: { products } }); // Changed to match expected response structure
+    res.status(200).json({ data: { products } });
   } catch (err) {
     res.status(500).json({ error: 'Unexpected error occurred' });
   }
@@ -66,10 +59,6 @@ export const getProductsByCategory = async (req: Request, res: Response): Promis
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      res.status(400).json({ error: 'Invalid product ID' });
-      return;
-    }
 
     const product = await Product.findById(id);
     if (!product) {
@@ -77,7 +66,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Only allow updating quantity for now
+    // Only allow updating quantity for now, in future we can expand this
+    // to allow other fields like name, price, etc.
     if ('quantity' in req.body && typeof req.body.quantity === 'number') {
       product.quantity = req.body.quantity;
       await product.save();
@@ -87,7 +77,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
         messages: [{ value: JSON.stringify({ type: 'product-updated', payload: product }) }],
       });
 
-      res.json({ result: product });
+      res.status(200).json({ result: product });
     } else {
       res.status(400).json({ error: 'Only quantity updates are supported' });
     }

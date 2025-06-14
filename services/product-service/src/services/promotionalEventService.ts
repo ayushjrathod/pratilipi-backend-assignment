@@ -110,7 +110,6 @@ class PromotionalEventService {
         console.error('Promotional events cron job failed:', error);
       }
     });
-
     console.log('Promotional events cron job initialized');
   }
 }

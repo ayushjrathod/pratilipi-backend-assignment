@@ -1,4 +1,3 @@
-// filepath: /home/ayra/Documents/Code/Pratilipi/services/user-service/src/routes/userRoutes.ts
 import express from 'express';
 import { z } from 'zod';
 import { userController } from '../controllers/userController';

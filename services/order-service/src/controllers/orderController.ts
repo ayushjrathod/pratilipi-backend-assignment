@@ -14,9 +14,7 @@ export const createOrder = async (req: Request, res: Response) => {
       throw createError(401, 'INVALID_USER', 'User not found or invalid');
     });
 
-    const enrichedProducts = await Promise.all(
-      req.body.products.map(orderService.processProduct)
-    );
+    const enrichedProducts = await Promise.all(req.body.products.map(orderService.processProduct));
 
     const order = await Order.create({
       products: enrichedProducts,
@@ -42,7 +40,7 @@ export const getOrderById = async (req: Request, res: Response) => {
     if (!order) {
       throw createError(404, 'ORDER_NOT_FOUND', 'Order not found');
     }
-    res.json({ result: order });
+    res.status(200).json({ result: order });
   } catch (error: any) {
     res.status(error.status || 500).json({
       code: error.code || 'FETCH_ORDER_FAILED',
@@ -55,7 +53,7 @@ export const getOrderById = async (req: Request, res: Response) => {
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
     const orders = await Order.find({});
-    res.json({ result: orders });
+    res.status(200).json({ result: orders });
   } catch (error: any) {
     res.status(500).json({
       code: 'FETCH_ORDERS_FAILED',

@@ -7,10 +7,10 @@ import { producer } from './kafka/kafka';
 
 config();
 
-const portStr = process.env.USERS_SERVICE_PORT || '8000';
-const PORT = Number.isNaN(parseInt(portStr, 10)) ? 8000 : parseInt(portStr, 10);
-const metricsPortStr = process.env.METRICS_PORT || '9201';
-const METRICS_PORT = Number.isNaN(parseInt(metricsPortStr, 10))
+const portStr: string = process.env.USERS_SERVICE_PORT || '8000';
+const PORT: number = Number.isNaN(parseInt(portStr, 10)) ? 8000 : parseInt(portStr, 10);
+const metricsPortStr: string = process.env.METRICS_PORT || '9201';
+const METRICS_PORT: number = Number.isNaN(parseInt(metricsPortStr, 10))
   ? 9201
   : parseInt(metricsPortStr, 10);
 
@@ -45,10 +45,7 @@ const handleShutdown = async (error?: Error): Promise<never> => {
     console.error('Fatal error:', error);
   }
   try {
-    await Promise.allSettled([
-      mongoose.connection.close(),
-      producer.disconnect(),
-    ]);
+    await Promise.allSettled([mongoose.connection.close(), producer.disconnect()]);
   } catch (err) {
     console.error('Error during shutdown:', err);
   }

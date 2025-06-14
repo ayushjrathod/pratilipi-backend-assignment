@@ -9,6 +9,7 @@ import { initializePromotionalEvents } from './services/promotionalEventService'
 import { OrderEventPayload } from './types/types';
 
 config();
+
 const ptrStr = process.env.PRODUCTS_SERVICE_PORT || '8000';
 const PRODUCTS_PORT = Number.isNaN(parseInt(ptrStr, 10)) ? 8000 : parseInt(ptrStr, 10);
 const metricsPortStr = process.env.METRICS_PORT || '9203';
@@ -76,10 +77,7 @@ const handleShutdown = async (error?: Error): Promise<void> => {
     console.error('Fatal error:', error);
   }
   try {
-    await consumer.disconnect();
-    await producer.disconnect();
-    await mongoose.disconnect();
-    console.log('Gracefully shut down');
+    await Promise.all([consumer.disconnect(), producer.disconnect(), mongoose.disconnect()]);
   } catch (error) {
     console.error('Error during shutdown:', error);
   }
@@ -91,9 +89,7 @@ const setupConnections = async (): Promise<void> => {
   if (!mongoUri) {
     throw new Error('Environment variable is missing: MONGO_URI');
   }
-  await mongoose.connect(mongoUri);
-  await producer.connect();
-  await consumer.connect();
+  await Promise.all([mongoose.connect(mongoUri), producer.connect(), consumer.connect()]);
 };
 
 const startServer = async (): Promise<void> => {
@@ -109,7 +105,7 @@ const startServer = async (): Promise<void> => {
 
     const metricsApp = setupMetricsServer(setupMetrics());
     metricsApp.listen(METRICS_PORT, '0.0.0.0', () => {
-      console.log(`Metrics available at http://localhost:${METRICS_PORT}/metrics`);
+      console.log(`Metrics available at ${METRICS_PORT}/metrics`);
     });
   } catch (error) {
     await handleShutdown(error as Error);

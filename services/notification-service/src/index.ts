@@ -18,14 +18,13 @@ const ENV = {
   NOTIFICATIONS_SERVICE_PORT: process.env.NOTIFICATIONS_SERVICE_PORT! || '8000',
   METRICS_PORT: process.env.METRICS_PORT || '9205',
 };
-const validateEnvironment = (): void => {
-  Object.values(ENV).forEach((value) => {
+const validateEnvironment = async (): Promise<void> => {
+  for (const [key, value] of Object.entries(ENV)) {
     if (!value) {
       throw new Error(`Missing required environment variable`);
     }
-  });
+  }
 };
-validateEnvironment();
 
 const setupMetrics = (): client.Registry => {
   const register = new client.Registry();
@@ -42,61 +41,57 @@ const setupMetricsServer = (register: client.Registry): express.Application => {
   return metricsApp;
 };
 
-
-  const setupConnections = async (): Promise<void> => {
-    const mongouri = ENV.MONGO_URI;
-    await mongoose.connect(mongouri);
-      await producer.connect();
-      await consumer.connect();
-  };
+const setupConnections = async (): Promise<void> => {
+  await Promise.all([producer.connect(), mongoose.connect(ENV.MONGO_URI), consumer.connect()]);
+};
 
 const initializeNotificationProcessor = async (): Promise<void> => {
-    try {
-      const notificationProcessor = new NotificationProcessorService();
-      await notificationProcessor.initializePriorityEventConsumer();
-      console.log('Notification processor initialized');
-    } catch (error) {
-      console.error('Notification processor initialization failed:', error);
-      throw error;
-    }
-  };
+  try {
+    const notificationProcessor = new NotificationProcessorService();
+    await notificationProcessor.initializePriorityEventConsumer();
+    console.log('Notification processor initialized');
+  } catch (error) {
+    console.error('Notification processor initialization failed:', error);
+    throw error;
+  }
+};
 
-  const handleShutdown = async (error?:Error): Promise<void> => {
-    if(error){
-      console.error('Error during shutdown:', error);
-    }
-    try {
-        await Promise.allSettled([
-          mongoose.connection.close(),
-          producer.disconnect(),
-          consumer.disconnect()
-        ]);
-    } catch (error) {
-      console.error('Error during shutdown:', error);
-      process.exit(error ? 1 : 0);
-    }
-  };
+const handleShutdown = async (error?: Error): Promise<void> => {
+  if (error) {
+    console.error('Error during shutdown:', error);
+  }
+  try {
+    await Promise.allSettled([
+      mongoose.connection.close(),
+      producer.disconnect(),
+      consumer.disconnect(),
+    ]);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(error ? 1 : 0);
+  }
+};
 
 const startServer = async (): Promise<void> => {
-    try {
+  try {
+    await validateEnvironment();
+    await setupConnections();
 
-      await setupConnections();
-
-      //main application
-      app.listen(ENV.NOTIFICATIONS_SERVICE_PORT, '0.0.0.0', () => {
-        console.log(`Notification service running on port ${ENV.NOTIFICATIONS_SERVICE_PORT}`);
-      });
-      // Start metrics server
-      const metricsApp = setupMetricsServer(setupMetrics());
-      metricsApp.listen(ENV.METRICS_PORT, '0.0.0.0', () => {
-        console.log(`Metrics available at port ${ENV.METRICS_PORT}/metrics`);
-      });
-      // Initialize notification processor
-      await initializeNotificationProcessor();
-    } catch (error) {
-      await handleShutdown(error as Error);
-    }
+    //main application
+    app.listen(ENV.NOTIFICATIONS_SERVICE_PORT, '0.0.0.0', () => {
+      console.log(`Notification service running on port ${ENV.NOTIFICATIONS_SERVICE_PORT}`);
+    });
+    // Start metrics server
+    const metricsApp = setupMetricsServer(setupMetrics());
+    metricsApp.listen(ENV.METRICS_PORT, '0.0.0.0', () => {
+      console.log(`Metrics available at port ${ENV.METRICS_PORT}/metrics`);
+    });
+    // Initialize notification processor
+    await initializeNotificationProcessor();
+  } catch (error) {
+    await handleShutdown(error as Error);
   }
+};
 
 // Handle unexpected errors
 process.on('unhandledRejection', handleShutdown);

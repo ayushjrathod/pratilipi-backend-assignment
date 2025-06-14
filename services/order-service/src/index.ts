@@ -38,8 +38,7 @@ const setupConnections = async (): Promise<void> => {
   if (!mongoUrl) {
     throw new Error('MONGO_URI environment variable is not set');
   }
-  await mongoose.connect(mongoUrl);
-  await producer.connect();
+  await Promise.all([mongoose.connect(mongoUrl), producer.connect()]);
 };
 
 const handleShutdown = async (error?: Error): Promise<never> => {
@@ -47,9 +46,7 @@ const handleShutdown = async (error?: Error): Promise<never> => {
     console.error('Fatal error:', error);
   }
   try {
-    await producer.disconnect();
-    await consumer.disconnect();
-    await mongoose.disconnect();
+    await Promise.all([consumer.disconnect(), producer.disconnect(), mongoose.disconnect()]);
   } catch (err) {
     console.error('Error during shutdown:', err);
   }
@@ -69,7 +66,7 @@ const startServer = async (): Promise<void> => {
     // Start metrics server
     const metricsApp = setupMetricsServer(setupMetrics());
     metricsApp.listen(METRICS_PORT, '0.0.0.0', () => {
-      console.log(`Metrics available at http://localhost:${METRICS_PORT}/metrics`);
+      console.log(`Metrics available on ${METRICS_PORT}/metrics`);
     });
   } catch (error) {
     await handleShutdown(error as Error);

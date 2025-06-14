@@ -1,4 +1,3 @@
-// filepath: /home/ayra/Documents/Code/Pratilipi/services/user-service/src/controllers/userController.ts
 import bcrypt from 'bcryptjs';
 import express from 'express';
 import { producer } from '../kafka/kafka';
@@ -11,7 +10,7 @@ export const userController = {
   getAllUsers: async (req: express.Request, res: express.Response): Promise<void> => {
     try {
       const users = await User.find({});
-      res.json({ result: users });
+      res.status(200).json({ result: users });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unexpected error occurred';
       res.status(500).json({ error: errorMessage });
@@ -27,7 +26,7 @@ export const userController = {
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      res.json({ result: user });
+      res.status(200).json({ result: user });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unexpected error occurred';
       res.status(500).json({ error: errorMessage });
@@ -55,7 +54,22 @@ export const userController = {
           recommendations: preferences?.recommendations ?? true,
         },
       });
-
+      await producer.send({
+        topic: 'user-events',
+        messages: [
+          {
+            value: JSON.stringify({
+              userId: newUser.id,
+              email: newUser.email,
+              eventType: 'user-signup',
+              details: {
+                timestamp: new Date().toISOString(),
+                loginMethod: 'email',
+              },
+            }),
+          },
+        ],
+      });
       const token = signJWT(newUser.id);
       res.status(201).json({
         result: {
@@ -80,23 +94,6 @@ export const userController = {
       }
 
       const token = signJWT(user.id);
-      await producer.send({
-        topic: 'user-events',
-        messages: [
-          {
-            value: JSON.stringify({
-              userId: user.id,
-              email: user.email,
-              eventType: 'user-login',
-              details: {
-                timestamp: new Date().toISOString(),
-                loginMethod: 'email',
-              },
-            }),
-          },
-        ],
-      });
-
       res.json({
         result: {
           user: {
@@ -104,8 +101,6 @@ export const userController = {
             name: user.name,
             email: user.email,
             preferences: user.preferences,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
           },
           access_token: token,
         },
@@ -131,7 +126,7 @@ export const userController = {
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      res.json({ result: updatedUser });
+      res.status(200).json({ result: updatedUser });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unexpected error occurred';
       res.status(500).json({ error: errorMessage });

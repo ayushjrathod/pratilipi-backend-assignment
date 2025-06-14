@@ -21,7 +21,9 @@ export const orderService = {
   },
 
   async processProduct({ _id, quantity }: OrderProductInput) {
-    const response = await axios.get<{ result: Product }>(`${process.env.PRODUCTS_SERVICE_URL}/id/${_id}`);
+    const response = await axios.get<{ result: Product }>(
+      `${process.env.PRODUCTS_SERVICE_URL}/id/${_id}`
+    );
     const product = response.data.result;
 
     if (!product || !product.name || !product.category || !product.price) {
