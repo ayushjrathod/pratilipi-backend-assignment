@@ -10,7 +10,13 @@
       <div class="header">
         <h1>{{title}}</h1>
       </div>
-      <div class="content">{{content}}</div>
+      <div class="content">
+        {{#if isPreformatted}}
+        <div class="pre-formatted">{{{content}}}</div>
+        {{else}}
+        <div>{{{content}}}</div>
+        {{/if}}
+      </div>
       <div class="footer">
         <p>© {{currentYear}} Our Platform. All rights reserved.</p>
       </div>

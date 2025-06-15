@@ -12,6 +12,9 @@
       </div>
       <div class="content">
         <p>Dear {{userName}},</p>
+        {{#if content}}
+        <div class="welcome-message">{{{content}}}</div>
+        {{else}}
         <p>Thank you for joining our platform. Your account has been successfully created.</p>
 
         <div class="info-box">
@@ -22,6 +25,7 @@
             <li>Set your preferences</li>
           </ul>
         </div>
+        {{/if}}
 
         <a href="{{platformUrl}}" class="button">Access Your Account</a>
       </div>

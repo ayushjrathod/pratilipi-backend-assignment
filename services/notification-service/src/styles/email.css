@@ -142,3 +142,22 @@ body {
   color: #4a5568;
   font-size: 14px;
 }
+
+.welcome-message {
+  background-color: #f0f9ff;
+  border-left: 4px solid #2563eb;
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.promotional-content {
+  background-color: #fef3e7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 0 4px 4px 0;
+  color: #92400e;
+}
+
+.promotional-content strong {
+  color: #b45309;
+}

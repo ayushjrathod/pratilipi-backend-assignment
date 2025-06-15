@@ -16,23 +16,19 @@ const METRICS_PORT = Number.isNaN(parseInt(metricsPortStr, 10))
   ? 9204
   : parseInt(metricsPortStr, 10);
 
-
-const setupMetrics = ():client.Registry=>{
+const setupMetrics = (): client.Registry => {
   const register = new client.Registry();
   register.setDefaultLabels({ app: 'recommendation-service' });
   client.collectDefaultMetrics({ register });
   return register;
-}
+};
 
 const setupMetricsServer = (register: client.Registry): express.Application => {
   const metricsApp = express();
-  metricsApp.get(
-    '/metrics',
-    async (req: express.Request, res: express.Response) => {
-      res.set('Content-Type', register.contentType);
-      res.end(await register.metrics());
-    }
-  );
+  metricsApp.get('/metrics', async (req: express.Request, res: express.Response) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
   return metricsApp;
 };
 
@@ -55,7 +51,6 @@ const FeedbackSchema = z.object({
   productId: z.string().min(1),
   isPositive: z.boolean(),
 });
-
 
 // Manual trigger endpoint (for testing)
 app.post(
@@ -128,31 +123,31 @@ const handleShutdown = async (error?: Error): Promise<never> => {
   }
 
   try {
-      await recommendationService.stop();
-      await producer.disconnect();
+    await recommendationService.stop();
+    await producer.disconnect();
   } catch (err) {
     console.error('Error during shutdown:', err);
-    process.exit(error ? 1 : 0);
   }
-}
+  process.exit(error ? 1 : 0);
+};
 
-const startServer = async():Promise<void> =>{
-  try{
+const startServer = async (): Promise<void> => {
+  try {
     await setupConnections();
 
-        // Start HTTP server
-        app.listen(PORT,'0.0.0.0', () => {
-          console.log(`Server running on port ${PORT}`);
-        });
-        // Start metrics server
-        const metrics = setupMetricsServer(setupMetrics());
-        metrics.listen(METRICS_PORT,'0.0.0.0', () => {
-          console.log(`Metrics available at http://localhost:${METRICS_PORT}`);
-        });
+    // Start HTTP server
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+    // Start metrics server
+    const metrics = setupMetricsServer(setupMetrics());
+    metrics.listen(METRICS_PORT, '0.0.0.0', () => {
+      console.log(`Metrics available at http://localhost:${METRICS_PORT}`);
+    });
   } catch (error) {
     await handleShutdown(error as Error);
   }
-}
+};
 
 process.on('unhandledRejection', handleShutdown);
 process.on('uncaughtException', handleShutdown);

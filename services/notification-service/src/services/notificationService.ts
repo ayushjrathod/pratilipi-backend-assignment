@@ -1,11 +1,23 @@
 import { Response } from 'express';
 import { isValidObjectId } from 'mongoose';
-import { Notification, NotificationPriority, NotificationType } from '../models/notification';
+import {
+  INotification,
+  Notification,
+  NotificationPriority,
+  NotificationType,
+} from '../models/notification';
 import { NotificationRequest, QueryParams } from '../types/types';
 import { createTransparentPixel, generateTrackingId } from '../utils/utils';
 
+interface PaginationResult {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export class NotificationService {
-  static async createNotification(data: NotificationRequest): Promise<Notification> {
+  static async createNotification(data: NotificationRequest): Promise<INotification> {
     const { userId, type, content, priority, metadata = {} } = data;
     const trackingId = type === NotificationType.EMAIL ? generateTrackingId() : undefined;
 
@@ -30,7 +42,7 @@ export class NotificationService {
     read?: boolean,
     limit = 50,
     page = 1
-  ): Promise<{ results: Notification[]; pagination: any }> {
+  ): Promise<{ results: INotification[]; pagination: PaginationResult }> {
     const query: QueryParams = { userId };
     if (priority) query.priority = priority;
     if (read !== undefined) query.read = read;
@@ -97,8 +109,6 @@ export class NotificationService {
       }
     } catch (err) {
       console.error('Error tracking email open:', err);
-      // Do not send response here, let createTransparentPixel handle it
-      // or let global error handler catch if createTransparentPixel fails
     }
     createTransparentPixel(res);
   }

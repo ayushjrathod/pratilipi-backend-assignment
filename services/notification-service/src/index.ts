@@ -61,11 +61,7 @@ const handleShutdown = async (error?: Error): Promise<void> => {
     console.error('Error during shutdown:', error);
   }
   try {
-    await Promise.allSettled([
-      mongoose.connection.close(),
-      producer.disconnect(),
-      consumer.disconnect(),
-    ]);
+    await Promise.all([mongoose.connection.close(), producer.disconnect(), consumer.disconnect()]);
   } catch (error) {
     console.error('Error during shutdown:', error);
     process.exit(error ? 1 : 0);
@@ -76,18 +72,17 @@ const startServer = async (): Promise<void> => {
   try {
     await validateEnvironment();
     await setupConnections();
+    await initializeNotificationProcessor();
 
     //main application
-    app.listen(ENV.NOTIFICATIONS_SERVICE_PORT, '0.0.0.0', () => {
+    app.listen(parseInt(ENV.NOTIFICATIONS_SERVICE_PORT, 10), '0.0.0.0', () => {
       console.log(`Notification service running on port ${ENV.NOTIFICATIONS_SERVICE_PORT}`);
     });
     // Start metrics server
     const metricsApp = setupMetricsServer(setupMetrics());
-    metricsApp.listen(ENV.METRICS_PORT, '0.0.0.0', () => {
+    metricsApp.listen(parseInt(ENV.METRICS_PORT, 10), '0.0.0.0', () => {
       console.log(`Metrics available at port ${ENV.METRICS_PORT}/metrics`);
     });
-    // Initialize notification processor
-    await initializeNotificationProcessor();
   } catch (error) {
     await handleShutdown(error as Error);
   }
